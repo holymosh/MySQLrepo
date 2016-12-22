@@ -7,3 +7,10 @@ begin
 delete from `schedule` where schedule.id = old.id;
 delete from `ticket` where ticket.exhibition = old.id;
 end;;
+
+drop trigger if exists `checkTimeSnippet`;;
+create trigger `checkTimeSnippet` before insert on `schedule`
+for each row
+begin
+
+end;;
