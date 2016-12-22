@@ -100,6 +100,7 @@ call exception();
 end if;
 end;;
 
+#9
 drop trigger if exists `ifContractExists` ;;
 create trigger `ifContractExists` before insert on `contract`
 for each row
@@ -109,4 +110,27 @@ if(@ifExists>0) then
 call exception();
 end if;
 end;;
+
+#10
+drop trigger if exists `checkPassportOnInsert` ;;
+create trigger `checkPassportOnInsert` before insert on `driver`
+for each row 
+begin
+set @passportsCount = (select count(*) from `driver` where new.passport_num=`driver`.passport_num and new.passport_ser=`driver`.passport_ser);
+	if(@passportsCount>0) then 
+		call exception();
+	end if;
+end;;
+
+#10
+drop trigger if exists `checkPassportOnUpdate` ;;
+create trigger `checkPassportOnUpdate` before update on `driver`
+for each row 
+begin
+set @passportsCount = (select count(*) from `driver` where driver.passport_num=new.passport_num and driver.passport_ser=new.passport_ser);
+	if(@passportsCount>0) then 
+		call exception();
+	end if;
+end;;
+
 delimiter ;
