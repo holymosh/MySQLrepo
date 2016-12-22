@@ -100,7 +100,7 @@ call exception();
 end if;
 end;;
 
-#drop trigger if exists `ifContractExists` ;;
+drop trigger if exists `ifContractExists` ;;
 create trigger `ifContractExists` before insert on `contract`
 for each row
 begin
