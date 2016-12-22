@@ -70,4 +70,15 @@ set @sitesCount = (select count(*) from `trucking_company` where trucking_compan
 	 call exception();
 	end if;
 end;;
+
+drop trigger if exists `checkMuseumName`;;
+create trigger `checkMuseumName` before insert on `museum`
+for each row
+begin
+set @museumName = new.name;
+set @namesCount = (select count(*) from `museum` where `museum`.name = museumName);
+	if(@namesCount >0) then
+    call exception();
+    end if;
+end;;
 delimiter ;
