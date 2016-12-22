@@ -59,4 +59,15 @@ set @toId = new.to;
 		call exception();
 	end if;
 end;;
+
+drop trigger if exists `checkUriCompany`;;
+create trigger `checkUriCompany` before insert on `trucking_company`
+for each row 
+begin 
+set @truckSite = new.site;
+set @sitesCount = (select count(*) from `trucking_company` where trucking_company.site=@truckSite);
+	if(@sitesCount>0) then 
+	 call exception();
+	end if;
+end;;
 delimiter ;
