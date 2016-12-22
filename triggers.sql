@@ -12,5 +12,9 @@ drop trigger if exists `checkTimeSnippet`;;
 create trigger `checkTimeSnippet` before insert on `schedule`
 for each row
 begin
-
+if(new.first_day>new.last_day or new.start_time>new.end_time) then
+call excp();
+end if;
 end;;
+
+delimiter ;
