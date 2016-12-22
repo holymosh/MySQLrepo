@@ -76,9 +76,20 @@ create trigger `checkMuseumName` before insert on `museum`
 for each row
 begin
 set @museumName = new.name;
-set @namesCount = (select count(*) from `museum` where `museum`.name = museumName);
+set @namesCount = (select count(*) from `museum` where `museum`.name = @museumName);
 	if(@namesCount >0) then
     call exception();
     end if;
+end;;
+
+drop table if exists `checkExponentyear` ;; 
+create trigger `checkExponentyear` before insert on `exponent`
+for each row
+begin
+set @currentTime = (select now());
+set @currentYear = (select extract(year from @currentTime));
+if(new.year> @currentYear) then
+call exception();
+end if;
 end;;
 delimiter ;
