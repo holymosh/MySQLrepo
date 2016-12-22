@@ -1,6 +1,6 @@
 
 delimiter ;;
-
+#1
 drop trigger if exists `checkTimeSnippet`;;
 create trigger `checkTimeSnippet` before insert on `schedule`
 for each row
@@ -10,8 +10,9 @@ begin
 	end if;
 end;;
 
-drop trigger if exists `checkTimeSnippet`;;
-create trigger `checkTimeSnippet` before update on `schedule`
+#1
+drop trigger if exists `checkTimeSnippetOnUpdate`;;
+create trigger `checkTimeSnippetOnUpdate` before update on `schedule`
 for each row
 begin
 	if(new.first_day>new.last_day or new.start_time>new.end_time) then
@@ -19,6 +20,7 @@ begin
 	end if;
 end;;
 
+#2
 drop trigger if exists `deleteExhibition`;;
 create trigger `deleteExhibition` before delete on `exhibition`
 for each row
@@ -28,6 +30,7 @@ begin
 end;;
 #sdrop trigger if exists `deleteExhibition`;;
 
+#3
 drop trigger if exists `checkUriOnCreate`;;
 create trigger `checkUriOnCreate` before insert on `museums_company`
 for each row
@@ -39,6 +42,7 @@ begin
 		end if;
 end;;
 
+#4
 drop trigger if exists `checkContactNumber`;;
 create trigger `checkContactNumber` before insert on `contact`
 for each row 
@@ -48,7 +52,7 @@ set @contactNumber = new.phone_number;
       call exception();
       end if;
 end;;
-
+#5
 drop trigger if exists `checkOrderMuseums`;;
 create trigger `checkOrderMuseums` before insert on `order`
 for each row
@@ -60,6 +64,7 @@ set @toId = new.to;
 	end if;
 end;;
 
+#6
 drop trigger if exists `checkUriCompany`;;
 create trigger `checkUriCompany` before insert on `trucking_company`
 for each row 
@@ -71,6 +76,7 @@ set @sitesCount = (select count(*) from `trucking_company` where trucking_compan
 	end if;
 end;;
 
+#7
 drop trigger if exists `checkMuseumName`;;
 create trigger `checkMuseumName` before insert on `museum`
 for each row
@@ -82,13 +88,24 @@ set @namesCount = (select count(*) from `museum` where `museum`.name = @museumNa
     end if;
 end;;
 
-drop table if exists `checkExponentyear` ;; 
+#8
+drop trigger if exists `checkExponentyear` ;; 
 create trigger `checkExponentyear` before insert on `exponent`
 for each row
 begin
 set @currentTime = (select now());
 set @currentYear = (select extract(year from @currentTime));
 if(new.year> @currentYear) then
+call exception();
+end if;
+end;;
+
+#drop trigger if exists `ifContractExists` ;;
+create trigger `ifContractExists` before insert on `contract`
+for each row
+begin
+set @ifExists = (select count(*) from `contract` where new.museum_company_id = `contract`.museum_company_id and new.trucking_company_id = `contract`.trucking_company_id);
+if(@ifExists>0) then
 call exception();
 end if;
 end;;
