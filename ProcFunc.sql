@@ -31,13 +31,35 @@ end;;
 
 drop function if exists `CreateSum` ;;
 create function `CreateSum` (id int)
-returns int
+returns long
 begin
-set @transportId = (select `order`.transport from `order` where `order`.id = id);
-set @transport_type = (select `transport`.type from transport where transport.id = transportId);
-set @trans_comp = (select `transport`.companyId from transport where transport.id = transportId);
-set @price = (select `price_list`.price from `price_list` where `price_list`.company = @trans_comp);
-return 0;
+declare transportId int default 0;
+declare transport_type varchar(50);
+declare trans_comp int default 0;
+declare beginTime datetime;
+declare result long;
+declare endTime datetime;
+declare unixBegin long;
+declare unixEnd long;
+declare price int default 0;
+set transportId = (select `order`.transport from `order` where `order`.id = id);
+set transport_type = (select `transport`.type from transport where transport.id = transportId);
+set beginTime = (select `order`.departuretime from `order` where `order`.id = id);
+set endTime = (select `order`.arrivaltime from `order` where `order`.id = id);
+set trans_comp = (select `transport`.companyId from transport where transport.id = transportId);
+set price = (select `price_list`.price from `price_list` where `price_list`.company = trans_comp);
+set unixBegin = unix_timestamp(beginTime);
+set unixEnd = unix_timestamp(endTime);
+set result = (unixEnd - unixBegin)/3600*price;
+return result;
 end;;
 
-delimiter ;
+drop function if exists `FindExponent` ;; 
+create function `FindExponent` (id int)
+returns int
+begin
+
+ 
+end;;  
+
+delimiter ;;
