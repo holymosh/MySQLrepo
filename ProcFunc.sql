@@ -88,4 +88,12 @@ select `driver`.id,`driver`.driver_name , `driver`.driver_surname , `driver`.exp
 group by `driver`.id
 having CheckDriver(`driver`.id,beginTime,endTime) = true;
 end;;
+
+#proc3 
+drop procedure if exists ExponentStory ;;
+create procedure ExponentStory( id int)
+begin
+select `order`.exponent , `order`.from , `order`.to ,`order`.departuretime , `order`.arrivaltime from `order` where `order`.exponent = id 
+group by `order`.departuretime;
+end;; 
 delimiter ;;
