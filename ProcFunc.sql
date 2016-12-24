@@ -45,6 +45,9 @@ declare result long;
 declare endTime datetime;
 declare unixBegin long;
 declare unixEnd long;
+declare discountId int default 0;
+declare discountPrice int default 0;
+declare discountValue int default 0;
 declare price int default 0;
 set transportId = (select `order`.transport from `order` where `order`.id = id);
 set transport_type = (select `transport`.type from transport where transport.id = transportId);
@@ -54,7 +57,13 @@ set trans_comp = (select `transport`.companyId from transport where transport.id
 set price = (select `price_list`.price from `price_list` where `price_list`.company = trans_comp and `price_list`.trasport_type = transport_type);
 set unixBegin = unix_timestamp(beginTime);
 set unixEnd = unix_timestamp(endTime);
+set discountId = (select `order`.discount from `order` where `order`.id = id);
+set discountPrice = (select `discount`.price_for_discount from `discount` where `discount`.id = discountId);
+set discountValue = (select `discount`.percent from `discount` where `discount`.id = discountId);
 set result = (unixEnd - unixBegin)/3600*price;
+if(result > discountPrice) then 
+set result = result * ((100-discountValue)/100);
+end if;
 return result;
 end;;
 
@@ -96,4 +105,14 @@ begin
 select `order`.exponent , `order`.from , `order`.to ,`order`.departuretime , `order`.arrivaltime from `order` where `order`.exponent = id 
 group by `order`.departuretime;
 end;; 
+
+#proc4
+drop procedure if exists GetNotifications ;;
+create procedure GetNotifications(idMuseum int)
+begin
+	set SQL_SAFE_UPDATES=0;
+	select `notification`.exponent , `notification`.time from notification where `notification`.museumId=museumId and `notification`.wasRead =0;
+	update `notification` set wasRead =1 where `notification`.museumId = idMuseum;
+	set SQL_SAFE_UPDATES=1;
+end;;
 delimiter ;;
