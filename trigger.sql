@@ -52,6 +52,7 @@ set @contactNumber = new.phone_number;
       call exception();
       end if;
 end;;
+
 #5
 drop trigger if exists `checkOrderMuseums`;;
 create trigger `checkOrderMuseums` before insert on `order`
@@ -62,6 +63,13 @@ set @toId = new.to;
 	if(@fromId = @toId) then 
 		call exception();
 	end if;
+end;;
+
+drop trigger if exists `checkOrderMuseumsAfterInsert`;;
+create trigger `checkOrderMuseumsAfterinsert` after insert on `order`
+for each row
+begin
+call CreateNotification(new.to,new.arrivaltime , new.exponent);
 end;;
 
 #6

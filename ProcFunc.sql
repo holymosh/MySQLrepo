@@ -1,5 +1,7 @@
 delimiter ;;
 
+#func1
+
 drop function if exists `CheckUri` ;;
 create function `CheckUri` (uri varchar(50))
 returns bool 
@@ -12,6 +14,7 @@ set @locateres = (select locate(".",uri));
 		end if;
 end;; 
 
+#func2
 drop function if exists `CheckDriver` ;;
 create function `CheckDriver` ( id int, snippetBegin datetime , snippetEnd datetime)
 returns bool
@@ -29,6 +32,7 @@ if(@result >0 ) then
 	end if;
 end;;
 
+#func3
 drop function if exists `CreateSum` ;;
 create function `CreateSum` (id int)
 returns long
@@ -54,6 +58,7 @@ set result = (unixEnd - unixBegin)/3600*price;
 return result;
 end;;
 
+#func4  
 drop function if exists `FindExponent` ;; 
 create function `FindExponent` (id int)
 returns int
@@ -65,4 +70,22 @@ set museumId = (select `order`.to from `order` where `order`.arrivaltime = lastT
 return museumId;
 end;;  
 
+#proc1 
+
+drop procedure if exists CreateNotification ;;
+create procedure CreateNotification( museumid int , arrivalTime datetime , exponentId int)
+begin
+	insert into `notification` values(0,museumid , 0, arrivalTime, exponentId);
+end;;
+
+#proc2
+
+drop procedure if exists FindFreeDrivers ;;
+create procedure FindFreeDrivers(companyId int , beginTime datetime , endTime datetime)
+begin
+select `driver`.id,`driver`.driver_name , `driver`.driver_surname , `driver`.experience_years from `driver` join `order` on `order`.driver=`driver`.id
+ where `driver`.company = companyId and (`order`.arrivaltime< beginTime or `order`.departuretime>endTime) 
+group by `driver`.id
+having CheckDriver(`driver`.id,beginTime,endTime) = true;
+end;;
 delimiter ;;
