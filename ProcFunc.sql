@@ -23,38 +23,21 @@ return false;
 end;; 
 
 
-#func3
+#Подсчет аренды экспоната
 drop function if exists `CreateSum` ;;
-create function `CreateSum` (id int)
+create function `CreateSum` (exponentId int, exhibitionId int )
 returns long
 begin
-declare transportId int default 0;
-declare transport_type varchar(50);
-declare trans_comp int default 0;
-declare beginTime datetime;
+declare firstDay date;
 declare result long;
-declare endTime datetime;
-declare unixBegin long;
-declare unixEnd long;
-declare discountId int default 0;
-declare discountPrice int default 0;
-declare discountValue int default 0;
-declare price int default 0;
-set transportId = (select `order`.transport from `order` where `order`.id = id);
-set transport_type = (select `transport`.type from transport where transport.id = transportId);
-set beginTime = (select `order`.departuretime from `order` where `order`.id = id);
-set endTime = (select `order`.arrivaltime from `order` where `order`.id = id);
-set trans_comp = (select `transport`.companyId from transport where transport.id = transportId);
-set price = (select `price_list`.price from `price_list` where `price_list`.company = trans_comp and `price_list`.trasport_type = transport_type);
-set unixBegin = unix_timestamp(beginTime);
-set unixEnd = unix_timestamp(endTime);
-set discountId = (select `order`.discount from `order` where `order`.id = id);
-set discountPrice = (select `discount`.price_for_discount from `discount` where `discount`.id = discountId);
-set discountValue = (select `discount`.percent from `discount` where `discount`.id = discountId);
-set result = (unixEnd - unixBegin)/3600*price;
-if(result > discountPrice) then 
-set result = result * ((100-discountValue)/100);
-end if;
+declare lastDay date;
+declare days int default 0;
+declare exponentPrice int default 0;
+set exponentPrice = (select `exponent`.`price` from `exponent` where `exponent`.id = exponentId);
+set firstDay = (select max(`schedule`.`first_day`) from `schedule` where `schedule`.`exhibition` = exhibitionId);
+set lastDay = (select max(`schedule`.`last_day`) from `schedule` where `schedule`.`exhibition`= exhibitionId);
+set days = datediff(lastDay , firstDay);
+set result = days*exponentPrice;
 return result;
 end;;
 
