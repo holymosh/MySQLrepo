@@ -53,7 +53,7 @@ set museumId = (select `order`.to from `order` where `order`.arrivaltime = lastT
 return museumId;
 end;;  
 
-#proc1 
+#создание уведомлений
 
 drop procedure if exists CreateNotification ;;
 create procedure CreateNotification( museumid int , arrivalTime datetime , exponentId int)
@@ -61,26 +61,21 @@ begin
 	insert into `notification` values(0,museumid , 0, arrivalTime, exponentId);
 end;;
 
-#proc2
 
-drop procedure if exists FindFreeDrivers ;;
-create procedure FindFreeDrivers(companyId int , beginTime datetime , endTime datetime)
-begin
-select `driver`.id,`driver`.driver_name , `driver`.driver_surname , `driver`.experience_years from `driver` join `order` on `order`.driver=`driver`.id
- where `driver`.company = companyId and (`order`.arrivaltime< beginTime or `order`.departuretime>endTime) 
-group by `driver`.id
-having CheckDriver(`driver`.id,beginTime,endTime) = true;
-end;;
-
-#proc3 
+#история экспоната
 drop procedure if exists ExponentStory ;;
-create procedure ExponentStory( id int)
+create procedure ExponentStory( exponentId int)
 begin
-select `order`.exponent , `order`.from , `order`.to ,`order`.departuretime , `order`.arrivaltime from `order` where `order`.exponent = id 
-group by `order`.departuretime;
+SELECT distinct `exhibition`.`name` , `schedule`.`first_day`,`schedule`.`last_day`, 
+	`schedule`.`start_time`,`schedule`.`end_time`  , `order`.`from` , `order`.`to` , `museum`.`city`
+from `exponent` , `exhibition` , `schedule` , `order` ,`museum` join `exponentstoexhibitions`
+ on `exponentstoexhibitions`.`exponent` = exponentId
+ where `exponentstoexhibitions`.`exhibition` = `schedule`.`exhibition` and 
+ `exhibition`.`id` = `exponentstoexhibitions`.`exhibition`
+ and `order`.`exponent` = exponentId and `order`.`to` = `exhibition`.`museumId` and `museum`.`id` = `exhibition`.`museumId` ;
 end;; 
 
-#proc4
+#получение уведомлений
 drop procedure if exists GetNotifications ;;
 create procedure GetNotifications(idMuseum int)
 begin
@@ -89,4 +84,22 @@ begin
 	update `notification` set wasRead =1 where `notification`.museumId = idMuseum;
 	set SQL_SAFE_UPDATES=1;
 end;;
+
+#поиск выставок в городе
+drop procedure if exists FindExhibitions ;; 
+create procedure FindExhibitions(city varchar(30),beginDate date , endDate date)
+begin
+
+select `exhibition`.`name` , `schedule`.`first_day` , `schedule`.`last_day` , `schedule`.`start_time` , `schedule`.`end_time`
+ from `exhibition`,`schedule` 
+ join `museum` on `museum`.`city` = city 
+ where `museum`.`id` = `exhibition`.`id` and `schedule`.`exhibition` = `exhibition`.`id` and
+ (
+ (`schedule`.`first_day`<=beginDate and beginDate<=`schedule`.last_day) or
+ (`schedule`.`first_day`<=endDate and endDate<=`schedule`.last_day) or 
+ (beginDate<=`schedule`.`first_day` and `schedule`.`first_day`<=endDate) or
+ (beginDate<=`schedule`.`last_day` and `schedule`.`last_day`<=endDate)
+ );
+end;;
+
 delimiter ;;
