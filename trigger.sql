@@ -35,24 +35,25 @@ drop trigger if exists `checkUriOnCreate`;;
 create trigger `checkUriOnCreate` before insert on `museums_company`
 for each row
 begin
+declare ifUriExists int default 0;
 	set @uri = new.site;
-    #set @locateres = (select locate(".ru",@uri));
     set @locateres = (select CheckUri(@uri));
+	set ifUriExists = (select count(*) from `museums_company` where `museums_company`.`site` = @uri);
 		if(@locateres =0) then
 		call exception();
 		end if;
 end;;
 
 # Проверка номера 
-drop trigger if exists `checkContactNumber`;;
-create trigger `checkContactNumber` before insert on `contact`
-for each row 
-begin
-set @contactNumber = new.phone_number;
-	if(@contactNumber<100000) then 
-      call exception();
-      end if;
-end;;
+#drop trigger if exists `checkContactNumber`;;
+#create trigger `checkContactNumber` before insert on `contact`
+#for each row 
+#begin
+#set @contactNumber = new.phone_number;
+#	if(@contactNumber<100000) then 
+#      call exception();
+#      end if;
+#end;;
 
 #Проверка на равенство места доставки и места отправления
 drop trigger if exists `checkOrderMuseums`;;
@@ -161,17 +162,16 @@ drop trigger if exists `CheckPhoneNumber` ;;
 create trigger `CheckPhoneNumber` before insert on `contact`
 for each row
 begin
-declare phoneNumber varchar(20);
-set phoneNumber = new.phone_number;
 declare leftSymbolPosition int default 0;
-declare rightSymbolPosition int defualt 0;
-declare plusPosition
-set leftSymbolPosition = (select position('(' in new.phone_number));
-set rightSymbolPosition = (select position(')' in new.phone_number));
+declare rightSymbolPosition int default 0;
+declare plusPosition int default 0;
+set leftSymbolPosition = (select locate('(' ,new.phone_number));
+set rightSymbolPosition = (select locate(')', new.phone_number));
 set plusPosition = (select position('+' in new.phone_number));
-	if(rightSymbolPosition-leftSymbolPosition =1 or rightSymbolPosition<leftSymbolPosition or leftSymbolPosition <=2 ) then 
+	if(rightSymbolPosition-leftSymbolPosition<1 or leftSymbolPosition<3) then 
 		call exception();
 	end if;
+    
 end;;
 
 delimiter ;
