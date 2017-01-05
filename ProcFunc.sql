@@ -102,5 +102,6 @@ select `exhibition`.`name` , `schedule`.`first_day` , `schedule`.`last_day` , `s
  );
 end;;
 #+7(495)-код региона 2310713
+#+7(4752)560998   +7(910)8520695
 #+7(47531)- код региона 560998
 delimiter ;;
