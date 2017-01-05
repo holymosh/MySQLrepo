@@ -1,6 +1,6 @@
 
 delimiter ;;
-#1
+# Проверка временного интервала
 drop trigger if exists `checkTimeSnippet`;;
 create trigger `checkTimeSnippet` before insert on `schedule`
 for each row
@@ -10,7 +10,7 @@ begin
 	end if;
 end;;
 
-#1
+# Проверка временного интервала
 drop trigger if exists `checkTimeSnippetOnUpdate`;;
 create trigger `checkTimeSnippetOnUpdate` before update on `schedule`
 for each row
@@ -20,7 +20,7 @@ begin
 	end if;
 end;;
 
-#2
+#Каскадное удаление выставки
 drop trigger if exists `deleteExhibition`;;
 create trigger `deleteExhibition` before delete on `exhibition`
 for each row
@@ -30,19 +30,20 @@ begin
 end;;
 #sdrop trigger if exists `deleteExhibition`;;
 
-#3
+#Проверка uri 
 drop trigger if exists `checkUriOnCreate`;;
 create trigger `checkUriOnCreate` before insert on `museums_company`
 for each row
 begin
 	set @uri = new.site;
-    set @locateres = (select locate(".ru",@uri));
+    #set @locateres = (select locate(".ru",@uri));
+    set @locateres = (select CheckUri(@uri));
 		if(@locateres =0) then
 		call exception();
 		end if;
 end;;
 
-#4
+# Проверка номера 
 drop trigger if exists `checkContactNumber`;;
 create trigger `checkContactNumber` before insert on `contact`
 for each row 
@@ -53,7 +54,7 @@ set @contactNumber = new.phone_number;
       end if;
 end;;
 
-#5
+#Проверка на равенство места доставки и места отправления
 drop trigger if exists `checkOrderMuseums`;;
 create trigger `checkOrderMuseums` before insert on `order`
 for each row
@@ -65,6 +66,7 @@ set @toId = new.to;
 	end if;
 end;;
 
+# Уведомление о доставке
 drop trigger if exists `checkOrderMuseumsAfterInsert`;;
 create trigger `checkOrderMuseumsAfterinsert` after insert on `order`
 for each row
@@ -84,7 +86,7 @@ set @sitesCount = (select count(*) from `trucking_company` where trucking_compan
 	end if;
 end;;
 
-#7
+#Проверка на существование текущего имени
 drop trigger if exists `checkMuseumName`;;
 create trigger `checkMuseumName` before insert on `museum`
 for each row
@@ -96,7 +98,7 @@ set @namesCount = (select count(*) from `museum` where `museum`.name = @museumNa
     end if;
 end;;
 
-#8
+# Валидность года экспоната
 drop trigger if exists `checkExponentyear` ;; 
 create trigger `checkExponentyear` before insert on `exponent`
 for each row
@@ -108,7 +110,7 @@ call exception();
 end if;
 end;;
 
-#9
+# Пролетевший тригер 
 drop trigger if exists `ifContractExists` ;;
 create trigger `ifContractExists` before insert on `contract`
 for each row
@@ -119,7 +121,7 @@ call exception();
 end if;
 end;;
 
-#10
+#проверка паспорта сотрудника
 drop trigger if exists `checkPassportOnInsert` ;;
 create trigger `checkPassportOnInsert` before insert on `driver`
 for each row 
@@ -130,13 +132,44 @@ set @passportsCount = (select count(*) from `driver` where new.passport_num=`dri
 	end if;
 end;;
 
-#10
+#Проверка паспорта сотрудника
 drop trigger if exists `checkPassportOnUpdate` ;;
 create trigger `checkPassportOnUpdate` before update on `driver`
 for each row 
 begin
 set @passportsCount = (select count(*) from `driver` where driver.passport_num=new.passport_num and driver.passport_ser=new.passport_ser);
 	if(@passportsCount>0) then 
+		call exception();
+	end if;
+end;;
+
+#Заполнение строчек в прайс листе возможно только в том случае , если компания имеет тип транспорта. 
+drop trigger if exists `CheckTransportTypeForCreatingRowsInPriceList` ;;
+create trigger `CheckTransportTypeForCreatingRowsInPriceList` before insert on `price_list`
+for each row
+begin 
+declare ifExists int default 0;
+set ifExists = (select count(`transport`.`type`) from `transport` where `transport`.companyId = new.company and `transport`.`type` = new.`trasport_type` );
+	if(ifExists = 0) then 
+		call exception();
+	end if;
+end;;
+
+# тригер на формат номера
+
+drop trigger if exists `CheckPhoneNumber` ;;
+create trigger `CheckPhoneNumber` before insert on `contact`
+for each row
+begin
+declare phoneNumber varchar(20);
+set phoneNumber = new.phone_number;
+declare leftSymbolPosition int default 0;
+declare rightSymbolPosition int defualt 0;
+declare plusPosition
+set leftSymbolPosition = (select position('(' in new.phone_number));
+set rightSymbolPosition = (select position(')' in new.phone_number));
+set plusPosition = (select position('+' in new.phone_number));
+	if(rightSymbolPosition-leftSymbolPosition =1 or rightSymbolPosition<leftSymbolPosition or leftSymbolPosition <=2 ) then 
 		call exception();
 	end if;
 end;;

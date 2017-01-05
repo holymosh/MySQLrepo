@@ -101,5 +101,6 @@ select `exhibition`.`name` , `schedule`.`first_day` , `schedule`.`last_day` , `s
  (beginDate<=`schedule`.`last_day` and `schedule`.`last_day`<=endDate)
  );
 end;;
-
+#+7(495)-код региона 2310713
+#+7(47531)- код региона 560998
 delimiter ;;
