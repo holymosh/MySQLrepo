@@ -5,8 +5,22 @@ drop trigger if exists `checkTimeSnippet`;;
 create trigger `checkTimeSnippet` before insert on `schedule`
 for each row
 begin
+	declare guideIsLocked int default 0;
 	if(new.first_day>new.last_day or new.start_time>new.end_time) then
 		call excp();
+	end if;
+    set guideIsLocked  = (
+    select count(*) from `schedule` where new.`guideId` = `schedule`.`guideId` and 
+    (
+		(`schedule`.`start_time`<= new.`start_time` and new.`start_time`<=`schedule`.`end_time`) or 
+		(`schedule`.`start_time`<= new.`end_time` and new.`end_time`<=`schedule`.`end_time`) or 
+		(new.`start_time` <= `schedule`.`start_time` and `schedule`.`start_time` <=new.`end_time` ) or
+		(new.`start_time` <= `schedule`.`end_time` and `schedule`.`end_time` <=new.`end_time`)
+    )
+    );
+    
+    if(guideIsLocked>0) then
+    call excp();
 	end if;
 end;;
 
@@ -44,17 +58,6 @@ declare ifUriExists int default 0;
 		end if;
 end;;
 
-# Проверка номера 
-#drop trigger if exists `checkContactNumber`;;
-#create trigger `checkContactNumber` before insert on `contact`
-#for each row 
-#begin
-#set @contactNumber = new.phone_number;
-#	if(@contactNumber<100000) then 
-#      call exception();
-#      end if;
-#end;;
-
 #Проверка на равенство места доставки и места отправления
 drop trigger if exists `checkOrderMuseums`;;
 create trigger `checkOrderMuseums` before insert on `order`
@@ -68,7 +71,7 @@ set @toId = new.to;
 end;;
 
 # Уведомление о доставке
-drop trigger if exists `checkOrderMuseumsAfterInsert`;;
+drop trigger if exists `checkOrderMuseumsAfterinsert`;;
 create trigger `checkOrderMuseumsAfterinsert` after insert on `order`
 for each row
 begin
@@ -169,7 +172,7 @@ set leftSymbolPosition = (select locate('(' ,new.phone_number));
 set rightSymbolPosition = (select locate(')', new.phone_number));
 set plusPosition = (select position('+' in new.phone_number));
 	if(rightSymbolPosition-leftSymbolPosition<1 or leftSymbolPosition<3) then 
-		call exception();
+ 		call exception();
 	end if;
     
 end;;
