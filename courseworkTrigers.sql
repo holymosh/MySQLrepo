@@ -49,3 +49,105 @@ begin
 end;;
 
 
+# 3 
+drop trigger if exists `noLicenseForMalware` ;;
+create trigger `noLicenseForMalware` before insert on `software`
+for each row
+begin
+	if(new.`type` = 'malware') then
+    call ex();
+    end if;
+end;;
+
+drop trigger if exists `noLicenseForMalware` ;;
+create trigger `noLicenseForMalware` before update on `software`
+for each row
+begin
+	if(new.`type` = 'malware') then
+    call ex();
+    end if;
+end;;
+
+#4 год выпуска ос не больше текущего
+drop trigger if exists `yearValueIsLessThanCurrentYearOrEquals` ;;
+create trigger `yearValueIsLessThanCurrentYearOrEquals` before insert on `os`
+for each row
+begin
+	set @currentTime = (select now());
+	set @currentYear = (select extract(year from @currentTime));
+		if(new.year> @currentYear) then
+		call exception();
+	end if;
+end;;
+
+drop trigger if exists `yearValueIsLessThanCurrentYearOrEquals` ;;
+create trigger `yearValueIsLessThanCurrentYearOrEquals` before update on `os`
+for each row
+begin
+	set @currentTime = (select now());
+	set @currentYear = (select extract(year from @currentTime));
+		if(new.year> @currentYear) then
+		call exception();
+	end if;
+end;;
+
+# 5 Проверка uri 
+drop trigger if exists `checkUriOnCreate`;;
+create trigger `checkUriOnCreate` before insert on `company`
+for each row
+begin
+declare ifUriExists int default 0;
+	set @uri = new.`uri`;
+    set @locateres = (select CheckUri(@uri));
+	set ifUriExists = (select count(*) from `company` where `company`.`uri` = @uri);
+		if(@locateres =0) then
+		call exception();
+		end if;
+end;;
+
+drop trigger if exists `checkUriOnCreate`;;
+create trigger `checkUriOnCreate` before update on `company`
+for each row
+begin
+declare ifUriExists int default 0;
+	set @uri = new.`uri`;
+    set @locateres = (select CheckUri(@uri));
+	set ifUriExists = (select count(*) from `company` where `company`.`uri` = @uri);
+		if(@locateres =0) then
+		call exception();
+        end if;
+end;;
+
+# 6 
+
+drop trigger if exists `fileTriger` ;;
+create trigger `fileTriger` before insert on `file`
+for each row
+begin
+	declare fileNameCount int default 0;
+    set fileNameCount = (select count(*) from `file` where new.`extension` = `file`.`extension`);
+    if(fileNameCount>0) then
+		call excp();
+        end if;
+    
+end;;
+
+drop trigger if exists `fileTriger` ;;
+create trigger `fileTriger` before update on `file`
+for each row
+begin
+	declare fileNameCount int default 0;
+    set fileNameCount = (select count(*) from `file` where new.`extension` = `file`.`extension`);
+    if(fileNameCount>0) then
+		call excp();
+        end if;
+    
+end;;
+
+# 7 нет патента на зловредное по
+drop trigger if exists `noPatentForMalware` ;;
+create trigger `noPatentForMalware` before insert on `patent`
+for each row
+begin
+
+end;;
