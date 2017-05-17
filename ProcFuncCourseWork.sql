@@ -47,3 +47,24 @@ begin
     return ifExists;
 end;;
 
+
+# 3 расчет минимальной стоимости системного требования
+drop function if exists `CreatePriceForSystem` ;;
+create function `CreatePriceForSystem` (id int)
+returns int
+begin
+	declare result int default 0;
+    declare minCpu int default 0;
+    declare minDisk int default 0;
+    declare minRam int default 0;
+    declare requirementId int default 0;
+    set requirementId = (select `program`.`systemRequirementId` from `program` where `program`.`id` = id);
+    set minCpu = (select min(`cpu`.`price`) from `cpu` join `requirement_to_cpu` on `requirement_to_cpu`.`requirementId` = requirementId);
+    set minDisk = (select min(`harddisk`.`price`) from `harddisk` join `requirement_to_harddisk` on `requirement_to_harddisk`.`requirementId` = requirementId);
+    set minRam = (select min(`ram`.`price`) from `ram` join `requirement_to_ram` on `requirement_to_ram`.`requirementId` = requirementId);
+    set result = minCpu+ minRam + minDisk;
+    return result;
+    
+end;;
+
+#5 расчет стоимости всего по
