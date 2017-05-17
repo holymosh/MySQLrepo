@@ -149,5 +149,48 @@ drop trigger if exists `noPatentForMalware` ;;
 create trigger `noPatentForMalware` before insert on `patent`
 for each row
 begin
+	declare softType varchar(20) default null;
+    set softType = (select(`software`.`type`) from `software` where `software`.`id` = new.`poId`);
+    if(softType = 'malware') then
+		call ex();
+    end if;
+end;;
 
+drop trigger if exists `noPatentForMalware` ;;
+create trigger `noPatentForMalware` before update on `patent`
+for each row
+begin
+	declare softType varchar(20) default null;
+    set softType = (select(`software`.`type`) from `software` where `software`.`id` = new.`poId`);
+    if(softType = 'malware') then
+		call ex();
+    end if;
+end;;
+
+#8 15
+
+drop trigger if exists `noRepeatForSoftwareToCompany` ;; 
+create trigger `noRepeatForSoftwareToCompany` before insert on `company_to_software`
+for each row
+begin
+	declare rowsCount int default 0;
+    set rowsCount = (select count(*) from `company_to_software` where `company_to_software`.`companyId` = new.`companyId` 
+		and `company_to_software`.`softwareId`= new.`softwareId`);
+	if(rowsCount >0) then
+		call exc();
+    end if;
+    
+end;;
+
+drop trigger if exists `noRepeatForSoftwareToCompany` ;; 
+create trigger `noRepeatForSoftwareToCompany` before update on `company_to_software`
+for each row
+begin
+	declare rowsCount int default 0;
+    set rowsCount = (select count(*) from `company_to_software` where `company_to_software`.`companyId` = new.`companyId` 
+		and `company_to_software`.`softwareId`= new.`softwareId`);
+	if(rowsCount >0) then
+		call exc();
+    end if;
+    
 end;;
