@@ -329,6 +329,67 @@ begin
     
 end;;
 
+#13 7
+drop trigger if exists `aboutVirtualMachines` ;;
+create trigger `aboutVirtualMachines` before insert on `framework_to_library`
+for each row
+begin
+	declare vmCount int default 0;
+    declare vm varchar(50) default null;
+    set vm = (select `programming_language`.`virtualMachine` from `programming_language` join `library` on `library`.`languageId` = new.`library` 
+		where `library`.`languageId` = `programming_language`.`id`);
+    set vmCount = (select count(*) from `framework_to_library` join `library` on `library`.`id`=`new`.`library` 
+						join `programming_language` on `programming_language`.id = `library`.`languageId`
+                        where `programming_language`.`virtualMachine` <> vm or `programming_language`.`virtualMachine`<> null );
+	if(vmCount>0) then
+		call exception();
+	end if;
+end;;
 
+drop trigger if exists `aboutVirtualMachines` ;;
+create trigger `aboutVirtualMachines` before update on `framework_to_library`
+for each row
+begin
+	declare vmCount int default 0;
+    declare vm varchar(50) default null;
+    set vm = (select `programming_language`.`virtualMachine` from `programming_language` join `library` on `library`.`languageId` = new.`library` 
+		where `library`.`languageId` = `programming_language`.`id`);
+    set vmCount = (select count(*) from `framework_to_library` join `library` on `library`.`id`=`new`.`library` 
+						join `programming_language` on `programming_language`.id = `library`.`languageId`
+                        where `programming_language`.`virtualMachine` <> vm or `programming_language`.`virtualMachine`<> null );
+	if(vmCount>0) then
+		call exception();
+	end if;
+end;;
 
+#14 14
 
+drop trigger if exists `programWithoutLicenseIsFree` ;;
+create trigger `programWithoutLicenseIsFree` after insert on `program`
+for each row
+begin
+	if(new.`licenseId` = null) then
+		update `program` set `program`.`sum` =0 where `program`.`id` = new.`id`;
+	end if;
+end;;
+
+#15
+
+drop trigger if exists `additional_requirement_trigger` ;; 
+create trigger `additional_requirement_trigger` after insert on `additional requirement`
+for each row 
+begin
+	declare requirementCount int default 0;
+    declare needParse int default 0;
+    set requirementCount = (select count(*) from `additional requirement`);
+    declare currentRequirement varchar(100) default null;
+    while requirementCount > 0 do
+		set currentRequirement = (select `additional requirement`.`description`
+			from `additional requirement` where `additional requirement`.`id` = requirementCount);
+		set needParse = (select locate(currentRequirement , new.`description`));
+        if(needParse > 0) then 
+			new.`description` = (select trim(both currentRequirement from new.`description`));
+        end if;
+		set requirementCount = requirementCount -1;
+    end while;
+end;;
