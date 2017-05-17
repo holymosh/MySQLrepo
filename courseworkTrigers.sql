@@ -194,3 +194,141 @@ begin
     end if;
     
 end;;
+
+
+# 9 6
+drop trigger if exists `documentationWithControlVersion` ;; 
+create trigger `documentationWithControlVersion` before insert on `documentation`
+for each row
+begin
+	declare valid tinyint default 0;
+    set valid = (select count(*) from `versions_controls` where `versions_controls`.`name` = new.`uri`);
+    if(valid=0) then
+		call exc();
+    end if;
+end;;
+
+drop trigger if exists `documentationWithControlVersion` ;; 
+create trigger `documentationWithControlVersion` before update on `documentation`
+for each row
+begin
+	declare valid tinyint default 0;
+    set valid = (select count(*) from `versions_controls` where `versions_controls`.`name` = new.`uri`);
+    if(valid=0) then
+		call exc();
+    end if;
+end;;
+
+#10 11
+
+drop trigger if exists `cantBeSpecialistsAtAll` ;;
+create trigger `cantBeSpecialistsAtAll` before insert on `programer_to_type`
+for each row
+begin
+	declare valid int default 0;
+    set valid = (select count(*) from `programer_to_type` where `programer_to_type`.`programerId` = new.`programerId`);
+    declare typesCount int default 0;
+    set typesCount = (select count(*) from `programer_type`);
+    if(typesCount = valid+1) then
+		call exception();
+	end if;
+end;;
+
+drop trigger if exists `cantBeSpecialistsAtAll` ;;
+create trigger `cantBeSpecialistsAtAll` before update on `programer_to_type`
+for each row
+begin
+	declare valid int default 0;
+    set valid = (select count(*) from `programer_to_type` where `programer_to_type`.`programerId` = new.`programerId`);
+    declare typesCount int default 0;
+    set typesCount = (select count(*) from `programer_type`);
+    if(typesCount = valid+1) then
+		call exception();
+	end if;
+end;;
+
+#11 13
+drop trigger if exists `programPrice` ;; 
+create trigger `programPrice` before insert on `program_to_framework`
+for each row
+begin
+	update `program` set `program`.`sum` = `program`.`sum`+'20000' where new.`programId` = `program`.`id`;
+end;;
+
+#12  2
+
+drop trigger if exists `system_requirement_trigger_cpu` ;; 
+create trigger `system_requirement_trigger_cpu` before insert on `requirement_to_cpu`
+for each row
+begin
+	declare rowsCount int default 0;
+    set rowsCount = (select count(*) from `requirement_to_cpu` where `requirement_to_cpu`.`cpuId` = new.`cpuId`);
+	if(rowsCount >0) then
+		call exc();
+    end if;
+    
+end;;
+
+drop trigger if exists `system_requirement_trigger_harddisk` ;; 
+create trigger `system_requirement_trigger_harddisk` before insert on `requirement_to_harddisk`
+for each row
+begin
+	declare rowsCount int default 0;
+    set rowsCount = (select count(*) from `requirement_to_harddisk` where `requirement_to_harddisk`.`diskId` = new.`diskId`);
+	if(rowsCount >0) then
+		call exc();
+    end if;
+    
+end;;
+
+drop trigger if exists `system_requirement_trigger_ram` ;; 
+create trigger `system_requirement_trigger_ram` before insert on `requirement_to_ram`
+for each row
+begin
+	declare rowsCount int default 0;
+    set rowsCount = (select count(*) from `requirement_to_ram` where `requirement_to_ram`.`ramId` = new.`ramId`);
+	if(rowsCount >0) then
+		call exc();
+    end if;
+    
+end;;
+
+drop trigger if exists `system_requirement_trigger_cpu` ;; 
+create trigger `system_requirement_trigger_cpu` before update on `requirement_to_cpu`
+for each row
+begin
+	declare rowsCount int default 0;
+    set rowsCount = (select count(*) from `requirement_to_cpu` where `requirement_to_cpu`.`cpuId` = new.`cpuId`);
+	if(rowsCount >0) then
+		call exc();
+    end if;
+    
+end;;
+
+drop trigger if exists `system_requirement_trigger_harddisk` ;; 
+create trigger `system_requirement_trigger_harddisk` before update on `requirement_to_harddisk`
+for each row
+begin
+	declare rowsCount int default 0;
+    set rowsCount = (select count(*) from `requirement_to_harddisk` where `requirement_to_harddisk`.`diskId` = new.`diskId`);
+	if(rowsCount >0) then
+		call exc();
+    end if;
+    
+end;;
+
+drop trigger if exists `system_requirement_trigger_ram` ;; 
+create trigger `system_requirement_trigger_ram` before update on `requirement_to_ram`
+for each row
+begin
+	declare rowsCount int default 0;
+    set rowsCount = (select count(*) from `requirement_to_ram` where `requirement_to_ram`.`ramId` = new.`ramId`);
+	if(rowsCount >0) then
+		call exc();
+    end if;
+    
+end;;
+
+
+
+
