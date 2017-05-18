@@ -68,3 +68,24 @@ begin
 end;;
 
 #5 расчет стоимости всего по
+
+drop function if exists `CreateSoftwareSum` ;;
+create function `CreateSoftwareSum` (id int)
+returns int
+begin
+	declare allProgramsCount int default 0;
+    declare result int default 0;
+    declare currentProgram int default 0;
+    set allProgramsCount = (select count(*) from `software_to_program`);
+    while allProgramsCount>0 do
+		set currentProgram =0;
+		set currentProgram = (select `software_to_program`.`programId` from `software_to_program`
+			where `software_to_program`.`softwareId` =  id and `software_to_program`.`id` = allProgramsCount) ;
+		if(currentProgram >0) then
+			set result = result + (select CreateProgramPrice(currentProgram));
+        end if;
+		set allProgramsCount = allProgramsCount-1;
+    end while;
+    return result;
+end;;
+ 
