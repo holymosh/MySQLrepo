@@ -89,3 +89,32 @@ begin
     return result;
 end;;
  
+ # процедуры
+ 
+ #1 список я п которые надо освоить в зависимости от типа
+ 
+ drop procedure if exists `GetLanguages` ;;
+ create procedure `GetLanguages` (typeId int)
+ begin
+	select `programming_language`.`name` , `framework`.`name` from `programming_language`,`framework` 
+    join `language_to_type` on `language_to_type`.`languageId` = `programming_language`.`id` and
+    `language_to_type`.`typeId`= typeId 
+    join `framework_to_library` on `framework_to_library`.`framework` = `framework`.`id` 
+    join `library` on `library`.`id`=`framework_to_library`.`library` where `library`.`languageId` = `programming_language`.`id`;
+end;;
+
+#2 составление системного требования
+drop procedure if exists `CreateRequirement` ;;
+create procedure `CreateRequirement`(programId int)
+begin
+	select `ram`.`name` , `cpu`.`name`,`harddisk`.`name` from `ram`
+    join `requirement_to_ram` on `requirement_to_ram`.`ramId` = `ram`.`id`
+    join `system_requirement` on `system_requirement`.`id` = `requirement_to_ram`.`requirementId` 
+    join `requirement_to_cpu` on `system_requirement`.`id` = `requirement_to_cpu`.`requirementId`
+    join `requirement_to_harddisk` on `system_requirement`.`id` = `requirement_to_harddisk`.`requirementId`
+    join `cpu` on `cpu`.`id` = `requirement_to_cpu`.`cpuId` 
+    join `harddisk` on `harddisk`.`id` = `requirement_to_harddisk`.`diskId`
+    join `program` on `program`.`systemRequirementId` = `system_requirement`.`id` where `program`.`id` = programId;
+    
+    
+end;;
