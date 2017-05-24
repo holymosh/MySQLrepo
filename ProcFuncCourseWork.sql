@@ -116,5 +116,14 @@ begin
     join `harddisk` on `harddisk`.`id` = `requirement_to_harddisk`.`diskId`
     join `program` on `program`.`systemRequirementId` = `system_requirement`.`id` where `program`.`id` = programId;
     
-    
+end;;
+
+#3 поиск программ, которые работают с определенным типом файла
+drop procedure if exists `FindProgramByFileType` ;;
+create procedure `FindProgramByFileType`(filetype varchar(10))
+begin
+	select `program`.`id`,`program`.`name` from `program`
+    join `file_to_program` on `file_to_program`.`programId` = `program`.`id` 
+    join `file` on `file`.`id` = `file_to_program`.`fileId`
+    where `file`.`extension` = filetype;
 end;;
