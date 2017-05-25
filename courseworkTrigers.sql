@@ -51,19 +51,23 @@ end;;
 
 # 3 
 drop trigger if exists `noLicenseForMalware` ;;
-create trigger `noLicenseForMalware` before insert on `software`
+create trigger `noLicenseForMalware` before insert on `license`
 for each row
 begin
-	if(new.`type` = 'malware') then
+	declare softType varchar(20) default null;
+    set softId = (select `software`.`type` from `software` where `software`.`id` = new.`softId`);
+    if(softType = 'malware') then
     call ex();
     end if;
 end;;
 
 drop trigger if exists `noLicenseForMalware` ;;
-create trigger `noLicenseForMalware` before update on `software`
+create trigger `noLicenseForMalware` before update on `license`
 for each row
 begin
-	if(new.`type` = 'malware') then
+	declare softType varchar(20) default null;
+    set softId = (select `software`.`type` from `software` where `software`.`id` = new.`softId`);
+    if(softType = 'malware') then
     call ex();
     end if;
 end;;

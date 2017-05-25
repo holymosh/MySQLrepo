@@ -127,3 +127,15 @@ begin
     join `file` on `file`.`id` = `file_to_program`.`fileId`
     where `file`.`extension` = filetype;
 end;;
+
+#4 просмотр лицензий у компании
+
+drop procedure if exists `GetLicensesFromCompany` ;;
+create procedure `GetLicensesFromCompany` (compId int)
+begin
+	select `license`.`id`,`license`.`number` from `license` 
+    join `software` on `software`.`id` = `license`.`softId`
+    join `company_to_software` on `company_to_software`.`softwareId`= `software`.`id`
+    join `company` on `company`.`id` = `company_to_software`.`companyId` 
+    where `company`.`id` = compId;
+end;;
