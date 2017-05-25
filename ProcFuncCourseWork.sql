@@ -139,3 +139,14 @@ begin
     join `company` on `company`.`id` = `company_to_software`.`companyId` 
     where `company`.`id` = compId;
 end;;
+
+#5 список программ для ос 
+
+drop procedure if exists `GetProgramsForOS` ;; 
+create procedure `GetProgramsForOS` (osId int)
+begin
+	select `program`.`id`,`program`.`name` from `program`
+    join `os_to_program` on `os_to_program`.`programId` = `program`.`id`
+    join `os` on `os`.`id` = `os_to_program`.`osId`
+    where osId = `os`.`id`;
+end
